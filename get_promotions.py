@@ -20,7 +20,7 @@ def get_thread_links(scrape_url, base_url, n_links = 5):
     links_count = 0
     connection = urllib.urlopen(scrape_url)
     dom =  lxml.html.fromstring(connection.read())
-    for link in dom.xpath('//a/@href'): # select the url in href for all a tags(links)
+    for link in dom.xpath('//a/@href'): 
         if 'showthread' in link:
             link, _ = link.split('&', 1)
             links_list.add(complete_links(link, base_url))
