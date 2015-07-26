@@ -5,13 +5,10 @@ import lxml.html
 import cProfile
 
 '''format:
-scrap_url, base_url, key_word'''
+scrap_url, base_url, key_word (if needed)'''
 
 sites = {'adrenaline': [
-    'http://adrenaline.uol.com.br/forum/sale-221', 'http://adrenaline.uol.com.br/forum', 'showthread']}
-# html_doc = requests.get(site)
-# soup = bs(html_doc.content)
-
+    'http://adrenaline.uol.com.br/forum/sale-221', 'http://adrenaline.uol.com.br/forum', 'showthread'], 'hardmob': ['http://www.hardmob.com.br/promocoes', 'http://www.hardmob.com.br/promocoes', 'promocoes']}
 
 def get_title(url):
     html_doc = requests.get(url)
@@ -23,39 +20,56 @@ def complete_links(partial_url, base_url):
     return '{}/{}'.format(base_url, partial_url)
 
 
-def get_thread_links(scrap_url, base_url, key_word, n_links=10):
+def get_dom(scrap_url):
+    html_doc = requests.get(scrap_url)
+    return lxml.html.fromstring(html_doc.content)
+
+def get_soup(link):
+    html_doc = requests.get(link)
+    return bs(html_doc.content)
+
+
+def format_adrenaline_link(link):
+    title = get_title(link)
+    _, t = title.split('>', 1)
+    thread_title, _ = t.split('<', 1)
+    return "Promo: {}\nLink: {}".format(thread_title, link) if thread_title.startswith(' [') else None
+
+
+def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/sale-221', base_url='http://adrenaline.uol.com.br/forum', key_word='showthread', n_links=10):
     '''Key_word argument to filter the threads of a given forum'''
-    connection = urllib.urlopen(scrap_url)
-    dom = lxml.html.fromstring(connection.read())
+    dom = get_dom(scrap_url)
     links_list = set()
     for link in dom.xpath('//a/@href'):
         if key_word in link:
             link, _ = link.split('&', 1)
             links_list.add(complete_links(link, base_url))
         if len(links_list) == n_links:
-            return links_list
+            break
+    for link in links_list:
+        corrected_link = format_adrenaline_link(link)
+        if corrected_link:
+            print(corrected_link)
+
+def format_hardmob_links(link):
+    _, title = link.split('-', 1)
+    c, _ = title.split('.', 1)
+    formatted_title = ' '.join([word for word in c.split('-') if word is not '-'])
+    return "Promo: {}\nLink: {}".format(formatted_title, link) 
+
+def get_hardmob_links(scrap_url = 'http://www.hardmob.com.br/promocoes', n_links = 5):
+    dom = get_soup(scrap_url)
+    link_count = 0
+    for link in dom.findAll('a'):
+        if link.get('id'):
+            if 'thread_title' in link.get('id') and ['faq', 'twitter'] not in link.get('id'):
+                thread_link = link.get('href')
+                print(format_hardmob_links(thread_link))
+                link_count += 1
+            if link_count == n_links:
+                break
+
+get_hardmob_links()
 
 
-def filter_adrenaline(scrap_url, base_url, key_word):
-    formatted_links = []
-    for link in get_thread_links(scrap_url, base_url, key_word):
-        title = get_title(link)
-        _, t = title.split('>', 1)
-        thread_title, _ = t.split('<', 1)
-        print(thread_title)
-        if thread_title.startswith('aaa ['):
-            print("Promo: {} \n Link: {}".format(thread_title, link).encode('utf-8'))
-    return formatted_links
 
-
-filter_adrenaline(
-    sites['adrenaline'][0], sites['adrenaline'][1], sites['adrenaline'][2])
-
-# while n_links < 3:
-#     thread_title = get_title(next(links))
-# if thread_title.startswith('['):
-# print (thread_title)
-#     _, title = thread_title.split('>', 1)
-#     if title.strip().startswith('['):
-#         print(title)
-#     n_links += 1
