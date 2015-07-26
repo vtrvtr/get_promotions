@@ -57,12 +57,12 @@ def format_hardmob_links(link):
     formatted_title = ' '.join([word for word in c.split('-') if word is not '-'])
     return "Promo: {}\nLink: {}".format(formatted_title, link) 
 
-def get_hardmob_links(scrap_url = 'http://www.hardmob.com.br/promocoes', n_links = 5):
+def get_hardmob_links(scrap_url = 'http://www.hardmob.com.br/promocoes', n_links = 10):
     dom = get_soup(scrap_url)
     link_count = 0
     for link in dom.findAll('a'):
         if link.get('id'):
-            if 'thread_title' in link.get('id') and ['faq', 'twitter'] not in link.get('id'):
+            if 'thread_title' in link.get('id') and 'twitter' not in link.get('href') and 'faq' not in link.get('href'):
                 thread_link = link.get('href')
                 print(format_hardmob_links(thread_link))
                 link_count += 1
@@ -71,5 +71,6 @@ def get_hardmob_links(scrap_url = 'http://www.hardmob.com.br/promocoes', n_links
 
 get_hardmob_links()
 
+print 'twitter' not in 'http://www.hardmob.com.br/promocoes/449293-twitter-siga-a-hardmob-promocoes-status-ok.html'
 
 
