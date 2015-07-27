@@ -10,6 +10,7 @@ scrap_url, base_url, key_word (if needed)'''
 sites = {'adrenaline': [
     'http://adrenaline.uol.com.br/forum/sale-221', 'http://adrenaline.uol.com.br/forum', 'showthread'], 'hardmob': ['http://www.hardmob.com.br/promocoes', 'http://www.hardmob.com.br/promocoes', 'promocoes']}
 
+
 def get_title(url):
     html_doc = requests.get(url)
     soup = bs(html_doc.content)
@@ -23,6 +24,7 @@ def complete_links(partial_url, base_url):
 def get_dom(scrap_url):
     html_doc = requests.get(scrap_url)
     return lxml.html.fromstring(html_doc.content)
+
 
 def get_soup(link):
     html_doc = requests.get(link)
@@ -51,14 +53,16 @@ def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/sale-221'
         if corrected_link:
             print(corrected_link)
 
+
 def format_hardmob_links(link):
     _, title = link.split('-', 1)
     c, _ = title.split('.', 1)
-    formatted_title = ' '.join([word for word in c.split('-')[1:] if word is not '-'])
-    # print formatted_title.replace(' r ', ' R$')
-    return "Promo: {}\nLink: {}".format(formatted_title.replace(' r ', ' R$').title(), link) 
+    formatted_title = ' '.join(
+        [word for word in c.split('-')[1:] if word is not '-'])
+    return "Promo: {}\nLink: {}".format(formatted_title.replace(' r ', ' R$').title(), link)
 
-def get_hardmob_links(scrap_url = 'http://www.hardmob.com.br/promocoes', n_links = 10):
+
+def get_hardmob_links(scrap_url='http://www.hardmob.com.br/promocoes', n_links=5):
     dom = get_soup(scrap_url)
     link_count = 0
     for link in dom.findAll('a'):
@@ -70,8 +74,24 @@ def get_hardmob_links(scrap_url = 'http://www.hardmob.com.br/promocoes', n_links
             if link_count == n_links:
                 break
 
+
+def get_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoes', n_links=5):
+    '''
+    I'm using the hardmob format here just because it fits perfectly
+    '''
+    base_link = 'http://www.promoforum.com.br/'
+    dom = get_soup(scrap_url)
+    link_count = 0
+    for link in dom.findAll('a'):
+        if link.get('class'):
+            if link.get('class')[0] == 'PreviewTooltip' and 'postar' not in link.get('href'):
+                thread_link = link.get('href')
+                print(
+                    format_hardmob_links(complete_links(thread_link, base_link)))
+                link_count += 1
+            if link_count == n_links:
+                break
+
+get_adrenaline_links()
 get_hardmob_links()
-
-print 'twitter' not in 'http://www.hardmob.com.br/promocoes/449293-twitter-siga-a-hardmob-promocoes-status-ok.html'
-
-
+get_promoforum_links()
