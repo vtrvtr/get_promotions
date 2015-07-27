@@ -54,8 +54,9 @@ def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/sale-221'
 def format_hardmob_links(link):
     _, title = link.split('-', 1)
     c, _ = title.split('.', 1)
-    formatted_title = ' '.join([word for word in c.split('-') if word is not '-'])
-    return "Promo: {}\nLink: {}".format(formatted_title, link) 
+    formatted_title = ' '.join([word for word in c.split('-')[1:] if word is not '-'])
+    # print formatted_title.replace(' r ', ' R$')
+    return "Promo: {}\nLink: {}".format(formatted_title.replace(' r ', ' R$').title(), link) 
 
 def get_hardmob_links(scrap_url = 'http://www.hardmob.com.br/promocoes', n_links = 10):
     dom = get_soup(scrap_url)
