@@ -1,14 +1,15 @@
 import lxml.html
 import requests
 from bs4 import BeautifulSoup as bs
+from datetime import datetime
+from subprocess import Popen
 
 FILE_PATH = 'E:\\Documents\\promocoes.txt'
 FILE = open(FILE_PATH, 'w')
+time = datetime.now()
 
 
-def get_title(url):
-    html_doc = requests.get(url)
-    soup = bs(html_doc.content)
+def get_title(soup):
     return soup.title.encode('utf-8')
 
 
@@ -31,7 +32,7 @@ def get_soup(link):
 def format_adrenaline_link(link):
     '''link (adrenaline) -> formatted link
     '''
-    title = get_title(link)
+    title = get_title(get_soup(link))
     _, title = title.split('>', 1)
     thread_title, _ = title.split('<', 1)
     return "\nPromo: {}\nLink: {}\n".format(thread_title, link) if thread_title.startswith(' [') else None
@@ -47,14 +48,17 @@ def format_hardmob_links(link):
 
 def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/sale-221', base_url='http://adrenaline.uol.com.br/forum', key_word='showthread', n_links=10):
     '''Key_word argument to filter the threads of a given forum'''
-    dom = get_dom(scrap_url)
+    dom = get_soup(scrap_url)
     links_list = set()
-    for link in dom.xpath('//a/@href'):
-        if key_word in link:
-            link, _ = link.split('&', 1)
-            links_list.add(complete_links(link, base_url))
-        if len(links_list) == n_links:
-            break
+    # for link in dom.xpath('//a/@href'):
+    for link in dom.findAll('a'):
+        href = link.get('href')
+        if href:
+            if key_word in href:
+                link, _ = href.split('&', 1)
+                links_list.add(complete_links(link, base_url))
+            if len(links_list) == n_links:
+                break
     for link in links_list:
         corrected_link = format_adrenaline_link(link)
         if corrected_link:
@@ -102,10 +106,10 @@ def get_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoe
 
 
 def main():
+    FILE.write('Last update: {}'.format(time))
     get_adrenaline_links()
     get_hardmob_links()
     get_promoforum_links()
-
 
 if __name__ == '__main__':
     main()
