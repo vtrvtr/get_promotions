@@ -2,7 +2,6 @@ import lxml.html
 import requests
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
-from subprocess import Popen
 
 FILE_PATH = 'E:\\Documents\\promocoes.txt'
 FILE = open(FILE_PATH, 'w')
@@ -50,7 +49,6 @@ def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/sale-221'
     '''Key_word argument to filter the threads of a given forum'''
     dom = get_soup(scrap_url)
     links_list = set()
-    # for link in dom.xpath('//a/@href'):
     for link in dom.findAll('a'):
         href = link.get('href')
         if href:
@@ -106,6 +104,7 @@ def get_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoe
 
 
 def main():
+    'main'
     FILE.write('Last update: {}'.format(time))
     get_adrenaline_links()
     get_hardmob_links()
