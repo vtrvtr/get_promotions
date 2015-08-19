@@ -2,12 +2,16 @@ import lxml.html
 import requests
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
-from subprocess import Popen
+import cfscrape
+
 
 FILE_PATH = 'E:\\Documents\\promocoes.txt'
 FILE = open(FILE_PATH, 'w')
 time = datetime.now()
 
+def get_html_cloudfare(link):
+    scraper = cfscrape.create_scraper()
+    return scraper.get(link).content
 
 def get_title(soup):
     return soup.title.encode('utf-8')
@@ -35,8 +39,6 @@ def format_adrenaline_link(link):
     _, t = link.rsplit('/',1)
     thread_title, _ = t.split('.')
     formatted_title = ' '.join([word for word in thread_title.split('-')])
-    # print(formatted_title.replace(' r ', ' R$').title())
-    # print "\nPromo: {}\nLink: {}\n".format(thread_title, link)
     return "\nPromo: {}\nLink: {}\n".format(formatted_title.replace(' r ', ' R$').title(), link)
 
 
@@ -106,11 +108,11 @@ def get_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoe
                 break
 
 
-# def main():
-#     FILE.write('Last update: {}'.format(time))
-#     get_adrenaline_links()
-#     get_hardmob_links()
-#     get_promoforum_links()
+def main():
+    FILE.write('Last update: {}'.format(time))
+    get_adrenaline_links()
+    get_hardmob_links()
+    get_promoforum_links()
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
