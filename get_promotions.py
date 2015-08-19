@@ -32,10 +32,12 @@ def get_soup(link):
 def format_adrenaline_link(link):
     '''link (adrenaline) -> formatted link
     '''
-    title = get_title(get_soup(link))
-    _, title = title.split('>', 1)
-    thread_title, _ = title.split('<', 1)
-    return "\nPromo: {}\nLink: {}\n".format(thread_title, link) if thread_title.startswith(' [') else None
+    _, t = link.rsplit('/',1)
+    thread_title, _ = t.split('.')
+    formatted_title = ' '.join([word for word in thread_title.split('-')])
+    # print(formatted_title.replace(' r ', ' R$').title())
+    # print "\nPromo: {}\nLink: {}\n".format(thread_title, link)
+    return "\nPromo: {}\nLink: {}\n".format(formatted_title.replace(' r ', ' R$').title(), link)
 
 
 def format_hardmob_links(link):
@@ -46,20 +48,19 @@ def format_hardmob_links(link):
     return "\nPromo: {}\nLink: {}\n".format(formatted_title.replace(' r ', ' R$').title(), link)
 
 
-def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/for-sale.221/', base_url='http://adrenaline.uol.com.br/forum', key_word='showthread', n_links=10):
+def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/for-sale.221/', base_url='http://adrenaline.uol.com.br/forum', key_word='thread', n_links=10):
     '''Key_word argument to filter the threads of a given forum'''
     dom = get_soup(scrap_url)
     links_list = set()
-    # for link in dom.xpath('//a/@href'):
     for link in dom.findAll('a'):
         href = link.get('href')
         if href:
-            if key_word in href:
-                link, _ = href.split('&', 1)
+            if key_word in href and not any(word in href for word in['atencao', 'regras']):
+                link, _ = href.rsplit('/', 1)
                 links_list.add(complete_links(link, base_url))
-            if len(links_list) == n_links:
+            elif len(links_list) == n_links:
                 break
-    for link in links_list:
+    for link in set(links_list):
         corrected_link = format_adrenaline_link(link)
         if corrected_link:
             try:
@@ -105,12 +106,11 @@ def get_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoe
                 break
 
 
-                
-def main():
-    FILE.write('Last update: {}'.format(time))
-    get_adrenaline_links()
-    get_hardmob_links()
-    get_promoforum_links()
+# def main():
+#     FILE.write('Last update: {}'.format(time))
+#     get_adrenaline_links()
+#     get_hardmob_links()
+#     get_promoforum_links()
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
