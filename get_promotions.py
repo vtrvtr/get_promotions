@@ -46,7 +46,7 @@ def format_hardmob_links(link):
     return "\nPromo: {}\nLink: {}\n".format(formatted_title.replace(' r ', ' R$').title(), link)
 
 
-def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/sale-221', base_url='http://adrenaline.uol.com.br/forum', key_word='showthread', n_links=10):
+def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/for-sale.221/', base_url='http://adrenaline.uol.com.br/forum', key_word='showthread', n_links=10):
     '''Key_word argument to filter the threads of a given forum'''
     dom = get_soup(scrap_url)
     links_list = set()
@@ -105,6 +105,7 @@ def get_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoe
                 break
 
 
+                
 def main():
     FILE.write('Last update: {}'.format(time))
     get_adrenaline_links()
