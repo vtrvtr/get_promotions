@@ -2,16 +2,18 @@ import lxml.html
 import requests
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
-import cfscrape
+# import cfscrape
 
 
 FILE_PATH = 'E:\\Documents\\promocoes.txt'
 FILE = open(FILE_PATH, 'w')
 time = datetime.now()
 
+
 def get_html_cloudfare(link):
     scraper = cfscrape.create_scraper()
     return scraper.get(link).content
+
 
 def get_title(soup):
     return soup.title.encode('utf-8')
@@ -36,7 +38,7 @@ def get_soup(link):
 def format_adrenaline_link(link):
     '''link (adrenaline) -> formatted link
     '''
-    _, t = link.rsplit('/',1)
+    _, t = link.rsplit('/', 1)
     thread_title, _ = t.split('.')
     formatted_title = ' '.join([word for word in thread_title.split('-')])
     return "\nPromo: {}\nLink: {}\n".format(formatted_title.replace(' r ', ' R$').title(), link)
@@ -57,7 +59,7 @@ def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/fo
     for link in dom.findAll('a'):
         href = link.get('href')
         if href:
-            if key_word in href and not any(word in href for word in['atencao', 'regras']):
+            if key_word in href and not any(word in href for word in['atencao', 'regras', 'censurados']):
                 link, _ = href.rsplit('/', 1)
                 links_list.add(complete_links(link, base_url))
             elif len(links_list) == n_links:
@@ -108,10 +110,32 @@ def get_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoe
                 break
 
 
+def get_promobit_links(scrap_url='http://www.promobit.com.br/Promocoes/em-destaque/page/1-2', n_links=5):
+    soup = get_soup(scrap_url)
+    base_link = 'http://www.promobit.com.br'
+    for link in soup.findAll('a'):
+        try:
+            href = link.get('href').encode('utf-8')
+            info = link.text.encode('utf-8')
+            if 'ver-promocoes' in href and 'R$' in info:
+                title, price = link.text.encode('utf-8').split('R$', 1)
+                formatted_title = "\nPromo: {} por R${}Link: {}{}\n".format(
+                    title.strip(), price.rsplit(' ', 1)[1], base_link, href)
+                try:
+                    FILE.write(formatted_title)
+                except Exception as e:
+                    FILE.write(e)
+        except AttributeError:
+            continue
+
+
+
+
+
 def main():
     FILE.write('Last update: {}'.format(time))
     get_adrenaline_links()
-    get_hardmob_links()
+    get_promobit_links()
     get_promoforum_links()
 
 if __name__ == '__main__':
