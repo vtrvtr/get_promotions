@@ -1,12 +1,11 @@
 import lxml.html
+import os
 import requests
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
-# import cfscrape
 
 
 FILE_PATH = 'E:\\Documents\\promocoes.txt'
-# FILE = open(FILE_PATH, 'w')
 time = datetime.now()
 
 
@@ -68,10 +67,6 @@ def gen_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/fo
         corrected_link = format_adrenaline_link(link)
         if corrected_link:
             yield corrected_link
-            # try:
-            #     FILE.write(corrected_link)
-            # except Exception as e:
-            #     FILE.write(e)
 
 
 def get_hardmob_links(scrap_url='http://www.hardmob.com.br/promocoes', n_links=5):
@@ -121,7 +116,7 @@ def gen_promobit_links(scrap_url='http://www.promobit.com.br/Promocoes/em-destaq
         except AttributeError:
             continue
 
-def check_presence(promotion, path=FILE_PATH):
+def check_link_presence(promotion, path=FILE_PATH):
     with open(path) as f:
         text = f.read()
         return True if promotion in text else False
@@ -130,16 +125,23 @@ def populate_txt(links):
     '''checks if link is already on file
     links (generator/list) -> txt wrote'''
     for link in links:
-        if not check_presence(link):
+        if not check_link_presence(link):
             with open(FILE_PATH, 'a+') as f:
                 f.write(link)
 
 
 def main():
-    FILE.write('Last update: {}'.format(time))
-    populate_txt(gen_promobit_links(n_links=4))
-    populate_txt(gen_adrenaline_links(n_links=4))
-    populate_txt(gen_promoforum_links(n_links=4))
+    with open(FILE_PATH, 'r') as f:
+        old_text = f.read()
+    populate_txt(gen_promobit_links(n_links=10))
+    populate_txt(gen_adrenaline_links(n_links=10))
+    populate_txt(gen_promoforum_links(n_links=10))
+    with open(FILE_PATH, 'r') as g:
+        new_text = g.read()
+        if new_text != old_text:
+            with open(FILE_PATH, 'r') as f:
+                f.write('Last update: {}'.format(time))
+            os.startfile(FILE_PATH)
 
 if __name__ == '__main__':
     main()
