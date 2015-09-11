@@ -131,19 +131,15 @@ def populate_txt(links):
     links (generator/list) -> txt wrote'''
     for link in links:
         if not check_presence(link):
-            print('lol')
             with open(FILE_PATH, 'a+') as f:
                 f.write(link)
 
 
-populate_txt(gen_promobit_links(n_links=4))
-populate_txt(gen_adrenaline_links(n_links=4))
-populate_txt(gen_promoforum_links(n_links=4))
-# def main():
-#     FILE.write('Last update: {}'.format(time))
-#     get_adrenaline_links()
-#     get_promobit_links()
-#     get_promoforum_links()
+def main():
+    FILE.write('Last update: {}'.format(time))
+    populate_txt(gen_promobit_links(n_links=4))
+    populate_txt(gen_adrenaline_links(n_links=4))
+    populate_txt(gen_promoforum_links(n_links=4))
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
