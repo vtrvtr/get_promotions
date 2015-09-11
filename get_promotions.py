@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 FILE_PATH = 'E:\\Documents\\promocoes.txt'
-FILE = open(FILE_PATH, 'w')
+# FILE = open(FILE_PATH, 'w')
 time = datetime.now()
 
 
@@ -52,7 +52,7 @@ def format_hardmob_links(link):
     return "\nPromo: {}\nLink: {}\n".format(formatted_title.replace(' r ', ' R$').title(), link)
 
 
-def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/for-sale.221/', base_url='http://adrenaline.uol.com.br/forum', key_word='thread', n_links=10):
+def gen_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/for-sale.221/', base_url='http://adrenaline.uol.com.br/forum', key_word='thread', n_links=10):
     '''Key_word argument to filter the threads of a given forum'''
     dom = get_soup(scrap_url)
     links_list = set()
@@ -67,10 +67,11 @@ def get_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/fo
     for link in set(links_list):
         corrected_link = format_adrenaline_link(link)
         if corrected_link:
-            try:
-                FILE.write(corrected_link)
-            except Exception as e:
-                FILE.write(e)
+            yield corrected_link
+            # try:
+            #     FILE.write(corrected_link)
+            # except Exception as e:
+            #     FILE.write(e)
 
 
 def get_hardmob_links(scrap_url='http://www.hardmob.com.br/promocoes', n_links=5):
@@ -89,7 +90,7 @@ def get_hardmob_links(scrap_url='http://www.hardmob.com.br/promocoes', n_links=5
                 break
 
 
-def get_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoes', n_links=5):
+def gen_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoes', n_links=5):
     '''
     I'm using the hardmob format here just because it fits perfectly
     '''
@@ -100,17 +101,12 @@ def get_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoe
         if link.get('class'):
             if link.get('class')[0] == 'PreviewTooltip' and 'postar' not in link.get('href'):
                 thread_link = link.get('href')
-                try:
-                    FILE.write(
-                        format_hardmob_links(complete_links(thread_link, base_link)))
-                except Exception as e:
-                    FILE.write(e)
+                yield format_hardmob_links(complete_links(thread_link, base_link))
                 link_count += 1
             if link_count == n_links:
                 break
 
-
-def get_promobit_links(scrap_url='http://www.promobit.com.br/Promocoes/em-destaque/page/1-2', n_links=5):
+def gen_promobit_links(scrap_url='http://www.promobit.com.br/Promocoes/em-destaque/page/1-2', n_links=5):
     soup = get_soup(scrap_url)
     base_link = 'http://www.promobit.com.br'
     for link in soup.findAll('a'):
@@ -121,22 +117,33 @@ def get_promobit_links(scrap_url='http://www.promobit.com.br/Promocoes/em-destaq
                 title, price = link.text.encode('utf-8').split('R$', 1)
                 formatted_title = "\nPromo: {} por R${}Link: {}{}\n".format(
                     title.strip(), price.rsplit(' ', 1)[1], base_link, href)
-                try:
-                    FILE.write(formatted_title)
-                except Exception as e:
-                    FILE.write(e)
+                yield formatted_title
         except AttributeError:
             continue
 
+def check_presence(promotion, path=FILE_PATH):
+    with open(path) as f:
+        text = f.read()
+        return True if promotion in text else False
+
+def populate_txt(links):
+    '''checks if link is already on file
+    links (generator/list) -> txt wrote'''
+    for link in links:
+        if not check_presence(link):
+            print('lol')
+            with open(FILE_PATH, 'a+') as f:
+                f.write(link)
 
 
+populate_txt(gen_promobit_links(n_links=4))
+populate_txt(gen_adrenaline_links(n_links=4))
+populate_txt(gen_promoforum_links(n_links=4))
+# def main():
+#     FILE.write('Last update: {}'.format(time))
+#     get_adrenaline_links()
+#     get_promobit_links()
+#     get_promoforum_links()
 
-
-def main():
-    FILE.write('Last update: {}'.format(time))
-    get_adrenaline_links()
-    get_promobit_links()
-    get_promoforum_links()
-
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
