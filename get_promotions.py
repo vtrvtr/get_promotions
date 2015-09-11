@@ -131,17 +131,18 @@ def populate_txt(links):
 
 
 def main():
-    with open(FILE_PATH, 'r') as f:
+    with open(FILE_PATH, 'r+') as f:
         old_text = f.read()
-    populate_txt(gen_promobit_links(n_links=10))
-    populate_txt(gen_adrenaline_links(n_links=10))
-    populate_txt(gen_promoforum_links(n_links=10))
+        f.seek(0)
+        f.truncate()
+    populate_txt(gen_promobit_links(n_links=2))
+    populate_txt(gen_adrenaline_links(n_links=2))
+    populate_txt(gen_promoforum_links(n_links=2))
     with open(FILE_PATH, 'r') as g:
         new_text = g.read()
-        if new_text != old_text:
-            with open(FILE_PATH, 'r') as f:
-                f.write('Last update: {}'.format(time))
-            os.startfile(FILE_PATH)
+    print(new_text == old_text)
+    if new_text != old_text:
+        os.startfile(FILE_PATH)
 
 if __name__ == '__main__':
     main()
