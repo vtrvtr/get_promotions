@@ -140,7 +140,6 @@ def main():
     populate_txt(gen_promoforum_links(n_links=2))
     with open(FILE_PATH, 'r') as g:
         new_text = g.read()
-    print(new_text == old_text)
     if new_text != old_text:
         os.startfile(FILE_PATH)
 
