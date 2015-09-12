@@ -44,6 +44,9 @@ def format_adrenaline_link(link):
 
 
 def format_hardmob_links(link):
+    '''
+    link: hardmob link
+    link -> formatted link'''
     _, title = link.split('-', 1)
     c, _ = title.split('.', 1)
     formatted_title = ' '.join(
@@ -52,7 +55,11 @@ def format_hardmob_links(link):
 
 
 def gen_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/for-sale.221/', base_url='http://adrenaline.uol.com.br/forum', key_word='thread', n_links=10):
-    '''Key_word argument to filter the threads of a given forum'''
+    '''scrap_url: adrenaline url to be scrapped
+    n_links: max number of links returned
+    base_url: base adrenaline url
+    key_word: word to filter pertinent forum entries
+    url -> formatted links'''
     dom = get_soup(scrap_url)
     links_list = set()
     for link in dom.findAll('a'):
@@ -70,6 +77,9 @@ def gen_adrenaline_links(scrap_url='http://adrenaline.uol.com.br/forum/forums/fo
 
 
 def get_hardmob_links(scrap_url='http://www.hardmob.com.br/promocoes', n_links=5):
+    '''scrap_url: hardmob url to be scrapped
+    n_links: max number of links returned
+    url -> formatted links'''
     dom = get_soup(scrap_url)
     link_count = 0
     for link in dom.findAll('a'):
@@ -86,9 +96,9 @@ def get_hardmob_links(scrap_url='http://www.hardmob.com.br/promocoes', n_links=5
 
 
 def gen_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoes', n_links=5):
-    '''
-    I'm using the hardmob format here just because it fits perfectly
-    '''
+    '''scrap_url: promoforum url to be scrapped
+    n_links: max number of links returned
+    url -> formatted links'''
     base_link = 'http://www.promoforum.com.br/'
     dom = get_soup(scrap_url)
     link_count = 0
@@ -101,7 +111,11 @@ def gen_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoe
             if link_count == n_links:
                 break
 
+
 def gen_promobit_links(scrap_url='http://www.promobit.com.br/Promocoes/em-destaque/page/1-2', n_links=5):
+    '''scrap_url: promobit url to be scrapped
+    n_links: max number of links returned
+    url -> formatted links'''
     soup = get_soup(scrap_url)
     base_link = 'http://www.promobit.com.br'
     for link in soup.findAll('a'):
@@ -116,28 +130,25 @@ def gen_promobit_links(scrap_url='http://www.promobit.com.br/Promocoes/em-destaq
         except AttributeError:
             continue
 
-def check_link_presence(promotion, path=FILE_PATH):
-    with open(path) as f:
-        text = f.read()
-        return True if promotion in text else False
 
-def populate_txt(links):
+def populate_txt(links, old_text):
     '''checks if link is already on file
-    links (generator/list) -> txt wrote'''
+    links: formatted promotion links to be written in the file
+    links (generator/list) -> write txt'''
+    full_txt = ''
     for link in links:
-        if not check_link_presence(link):
-            with open(FILE_PATH, 'a+') as f:
-                f.write(link)
+        if not (link in old_text):
+            full_txt = full_txt + link
+    with open(FILE_PATH, 'w') as f:
+        f.write(full_txt)
 
 
 def main():
-    with open(FILE_PATH, 'r+') as f:
+    with open(FILE_PATH, 'r') as f:
         old_text = f.read()
-        f.seek(0)
-        f.truncate()
-    populate_txt(gen_promobit_links(n_links=2))
-    populate_txt(gen_adrenaline_links(n_links=2))
-    populate_txt(gen_promoforum_links(n_links=2))
+    populate_txt(gen_promobit_links(n_links=5), old_text)
+    populate_txt(gen_adrenaline_links(n_links=5), old_text)
+    populate_txt(gen_promoforum_links(n_links=5), old_text)
     with open(FILE_PATH, 'r') as g:
         new_text = g.read()
     if new_text != old_text:
