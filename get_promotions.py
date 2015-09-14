@@ -1,8 +1,8 @@
 import lxml.html
-import os
 import requests
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
+from subprocess import Popen
 
 
 FILE_PATH = 'E:\\Documents\\promocoes.txt'
@@ -142,6 +142,13 @@ def populate_txt(links, old_text):
     with open(FILE_PATH, 'w') as f:
         f.write(full_txt)
 
+def enumWindowFunc(hwnd, windowList):
+    """ win32gui.EnumWindows() callback """
+    text = win32gui.GetWindowText(hwnd)
+    className = win32gui.GetClassName(hwnd)
+    if text.find("Notepad") >= 0:
+        windowList.append((hwnd, text, className))
+
 
 def main():
     with open(FILE_PATH, 'r') as f:
@@ -151,8 +158,8 @@ def main():
     populate_txt(gen_promoforum_links(n_links=5), old_text)
     with open(FILE_PATH, 'r') as g:
         new_text = g.read()
-    if new_text != old_text:
-        os.startfile(FILE_PATH)
+    if new_text:
+        Popen(["notepad.exe", FILE_PATH])
 
 if __name__ == '__main__':
     main()
