@@ -2,11 +2,25 @@ import lxml.html
 import requests
 from bs4 import BeautifulSoup as bs
 from datetime import datetime
-from subprocess import Popen
+from subprocess import Popen, STARTUPINFO
+
+
+'''Path for the file to be written'''
 
 
 FILE_PATH = 'E:\\Documents\\promocoes.txt'
+BACKUP_FILE_PATH = 'E:\Documents\\promocoes_backup.txt'
+
+'''Start up options for process
+wShowWindow = 0 -> hidden'''
+
+start_info = STARTUPINFO()
+start_info.dwFlags = 1
+start_info.wShowWindow = 1
+
+'''current time'''
 time = datetime.now()
+
 
 
 def get_html_cloudfare(link):
@@ -131,31 +145,28 @@ def gen_promobit_links(scrap_url='http://www.promobit.com.br/Promocoes/em-destaq
             continue
 
 
-def populate_txt(links, old_text):
+def populate_txt(links, cmp_file=BACKUP_FILE_PATH):
     '''checks if link is already on file
     links: formatted promotion links to be written in the file
     links (generator/list) -> write txt'''
-    full_txt = ''
+    with open(cmp_file, 'a+') as f:
+        txt = f.read()
     for link in links:
-        if not (link in old_text):
-            full_txt = full_txt + link
-    with open(FILE_PATH, 'w') as f:
-        f.write(full_txt)
-
-def enumWindowFunc(hwnd, windowList):
-    """ win32gui.EnumWindows() callback """
-    text = win32gui.GetWindowText(hwnd)
-    className = win32gui.GetClassName(hwnd)
-    if text.find("Notepad") >= 0:
-        windowList.append((hwnd, text, className))
+        if link not in txt:
+            with open(FILE_PATH, 'a+') as f:
+                f.write(link)
 
 
 def main():
-    with open(FILE_PATH, 'r') as f:
-        old_text = f.read()
-    populate_txt(gen_promobit_links(n_links=5), old_text)
-    populate_txt(gen_adrenaline_links(n_links=5), old_text)
-    populate_txt(gen_promoforum_links(n_links=5), old_text)
+    with open(FILE_PATH, 'r+') as f:
+        with open(BACKUP_FILE_PATH, 'a+') as f2:
+            old_text = f.read()
+            f2.write(old_text)
+            f.seek(0)
+            f.truncate()
+    populate_txt(gen_promobit_links(n_links=2))
+    populate_txt(gen_promoforum_links(n_links=2))
+    populate_txt(gen_adrenaline_links(n_links=2))
     with open(FILE_PATH, 'r') as g:
         new_text = g.read()
     if new_text:
