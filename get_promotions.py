@@ -120,7 +120,7 @@ def gen_promoforum_links(scrap_url='http://www.promoforum.com.br/forums/promocoe
         if link.get('class'):
             if link.get('class')[0] == 'PreviewTooltip' and 'postar' not in link.get('href'):
                 thread_link = link.get('href')
-                yield format_hardmob_links(complete_links(thread_link, base_link))
+                yield format_hardmob_links(complete_links(thread_link.encode('utf-8'), base_link))
                 link_count += 1
             if link_count == n_links:
                 break
@@ -144,7 +144,6 @@ def gen_promobit_links(scrap_url='http://www.promobit.com.br/Promocoes/em-destaq
         except AttributeError:
             continue
 
-
 def populate_txt(links, cmp_file=BACKUP_FILE_PATH):
     '''checks if link is already on file
     links: formatted promotion links to be written in the file
@@ -155,7 +154,6 @@ def populate_txt(links, cmp_file=BACKUP_FILE_PATH):
         if link not in txt:
             with open(FILE_PATH, 'a+') as f:
                 f.write(link)
-
 
 def main():
     with open(FILE_PATH, 'r+') as f:
